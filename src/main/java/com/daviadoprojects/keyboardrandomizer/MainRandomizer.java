@@ -20,7 +20,7 @@ public class MainRandomizer extends javax.swing.JFrame {
      */
     
     private HashMap<Integer, JButton> objMapping = new HashMap<Integer,JButton>();
-    private String correctAns = "Katherine";
+    public KeyboardPhase currentPhase;
     
     private void initializeHashmap(){
         
@@ -68,34 +68,36 @@ public class MainRandomizer extends javax.swing.JFrame {
     public MainRandomizer() {
         initComponents();
         initializeHashmap();
-        k = new KeyboardSetup();
-        pos1.setText(k.getAssociatedLetter("q", false).toUpperCase());
-        pos2.setText(k.getAssociatedLetter("w", false).toUpperCase());
-        pos3.setText(k.getAssociatedLetter("e", false).toUpperCase());
-        pos4.setText(k.getAssociatedLetter("r", false).toUpperCase());
-        pos5.setText(k.getAssociatedLetter("t", false).toUpperCase());
-        pos6.setText(k.getAssociatedLetter("y", false).toUpperCase());
-        pos7.setText(k.getAssociatedLetter("u", false).toUpperCase());
-        pos8.setText(k.getAssociatedLetter("i", false).toUpperCase());
-        pos9.setText(k.getAssociatedLetter("o", false).toUpperCase());
-        pos10.setText(k.getAssociatedLetter("p", false).toUpperCase());
-        pos11.setText(k.getAssociatedLetter("a", false).toUpperCase());
-        pos12.setText(k.getAssociatedLetter("s", false).toUpperCase());
-        pos13.setText(k.getAssociatedLetter("d", false).toUpperCase());
-        pos14.setText(k.getAssociatedLetter("f", false).toUpperCase());
-        pos15.setText(k.getAssociatedLetter("g", false).toUpperCase());
-        pos16.setText(k.getAssociatedLetter("h", false).toUpperCase());
-        pos17.setText(k.getAssociatedLetter("j", false).toUpperCase());
-        pos18.setText(k.getAssociatedLetter("k", false).toUpperCase());
-        pos19.setText(k.getAssociatedLetter("l", false).toUpperCase());
-        pos20.setText(k.getAssociatedLetter("z", false).toUpperCase());
-        pos21.setText(k.getAssociatedLetter("x", false).toUpperCase());
-        pos22.setText(k.getAssociatedLetter("c", false).toUpperCase());
-        pos23.setText(k.getAssociatedLetter("v", false).toUpperCase());
-        pos24.setText(k.getAssociatedLetter("b", false).toUpperCase());
-        pos25.setText(k.getAssociatedLetter("n", false).toUpperCase());
-        pos26.setText(k.getAssociatedLetter("m", false).toUpperCase());
+        currentPhase = new KeyboardPhase("test", new KeyboardSetup(), 2000);
         
+        pos1.setText(currentPhase.currentSetup.getAssociatedLetter("q", false).toUpperCase());
+        pos2.setText(currentPhase.currentSetup.getAssociatedLetter("w", false).toUpperCase());
+        pos3.setText(currentPhase.currentSetup.getAssociatedLetter("e", false).toUpperCase());
+        pos4.setText(currentPhase.currentSetup.getAssociatedLetter("r", false).toUpperCase());
+        pos5.setText(currentPhase.currentSetup.getAssociatedLetter("t", false).toUpperCase());
+        pos6.setText(currentPhase.currentSetup.getAssociatedLetter("y", false).toUpperCase());
+        pos7.setText(currentPhase.currentSetup.getAssociatedLetter("u", false).toUpperCase());
+        pos8.setText(currentPhase.currentSetup.getAssociatedLetter("i", false).toUpperCase());
+        pos9.setText(currentPhase.currentSetup.getAssociatedLetter("o", false).toUpperCase());
+        pos10.setText(currentPhase.currentSetup.getAssociatedLetter("p", false).toUpperCase());
+        pos11.setText(currentPhase.currentSetup.getAssociatedLetter("a", false).toUpperCase());
+        pos12.setText(currentPhase.currentSetup.getAssociatedLetter("s", false).toUpperCase());
+        pos13.setText(currentPhase.currentSetup.getAssociatedLetter("d", false).toUpperCase());
+        pos14.setText(currentPhase.currentSetup.getAssociatedLetter("f", false).toUpperCase());
+        pos15.setText(currentPhase.currentSetup.getAssociatedLetter("g", false).toUpperCase());
+        pos16.setText(currentPhase.currentSetup.getAssociatedLetter("h", false).toUpperCase());
+        pos17.setText(currentPhase.currentSetup.getAssociatedLetter("j", false).toUpperCase());
+        pos18.setText(currentPhase.currentSetup.getAssociatedLetter("k", false).toUpperCase());
+        pos19.setText(currentPhase.currentSetup.getAssociatedLetter("l", false).toUpperCase());
+        pos20.setText(currentPhase.currentSetup.getAssociatedLetter("z", false).toUpperCase());
+        pos21.setText(currentPhase.currentSetup.getAssociatedLetter("x", false).toUpperCase());
+        pos22.setText(currentPhase.currentSetup.getAssociatedLetter("c", false).toUpperCase());
+        pos23.setText(currentPhase.currentSetup.getAssociatedLetter("v", false).toUpperCase());
+        pos24.setText(currentPhase.currentSetup.getAssociatedLetter("b", false).toUpperCase());
+        pos25.setText(currentPhase.currentSetup.getAssociatedLetter("n", false).toUpperCase());
+        pos26.setText(currentPhase.currentSetup.getAssociatedLetter("m", false).toUpperCase());
+        
+        jLabel1.setText(currentPhase.currentTask.instructions);
         
     }
     
@@ -112,7 +114,7 @@ public class MainRandomizer extends javax.swing.JFrame {
     }
    
     public void handleKeyPress(String letter){
-        int keyToUse = k.getLetterIndex(letter)+1;
+        int keyToUse = currentPhase.currentSetup.getLetterIndex(letter)+1;
         if(keyToUse > 0){
             JButton button = objMapping.get(keyToUse);
             button.setBackground(Color.CYAN);
@@ -122,11 +124,11 @@ public class MainRandomizer extends javax.swing.JFrame {
     }
     
     public void handleKeyStop(String letter){
-        int keyToUse = k.getLetterIndex(letter)+1;
+        int keyToUse = currentPhase.currentSetup.getLetterIndex(letter)+1;
         if(keyToUse > 0){
             JButton button = objMapping.get(keyToUse);
             button.setBackground(Color.GRAY);
-            String newLetter = k.getAssociatedLetter(letter, letter.toUpperCase().equals(letter));
+            String newLetter = currentPhase.currentSetup.getAssociatedLetter(letter, letter.toUpperCase().equals(letter));
             textBox.setText(textBox.getText() + newLetter);
             checkIfCorrect(textBox.getText());
         }
@@ -134,11 +136,17 @@ public class MainRandomizer extends javax.swing.JFrame {
     }
     
     public void checkIfCorrect(String toCheck){
-        if(toCheck.toLowerCase().equals(correctAns.toLowerCase())){
+        if(toCheck.toLowerCase().equals(currentPhase.currentTask.correctAnswer.toLowerCase())){
             textBox.setBackground(Color.GREEN);
+            currentPhase.completeTask();
+            updateInstructions();
         }else{
             textBox.setBackground(Color.BLUE);
         }
+    }
+    
+    public void updateInstructions(){
+        jLabel1.setText(currentPhase.currentTask.instructions);
     }
 
     /**

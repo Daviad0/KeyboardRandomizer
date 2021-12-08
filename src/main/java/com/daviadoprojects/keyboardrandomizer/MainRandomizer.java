@@ -21,6 +21,7 @@ public class MainRandomizer extends javax.swing.JFrame {
     
     private HashMap<Integer, JButton> objMapping = new HashMap<Integer,JButton>();
     public KeyboardPhase currentPhase;
+    public KeyHandler thisKeyHandler;
     
     private void initializeHashmap(){
         
@@ -58,7 +59,12 @@ public class MainRandomizer extends javax.swing.JFrame {
         for(int i = 1; i <= 26; i++){
             JButton obj = objMapping.get(i);
             obj.setBackground(Color.GRAY);
+            
+            obj.addKeyListener(thisKeyHandler);
+            obj.setFocusable(true);
         }
+        
+        
         
         textBox.setBackground(Color.BLUE);
         
@@ -68,7 +74,7 @@ public class MainRandomizer extends javax.swing.JFrame {
     public MainRandomizer() {
         initComponents();
         initializeHashmap();
-        currentPhase = new KeyboardPhase("test", new KeyboardSetup(), 2000);
+        currentPhase = new KeyboardPhase("test", new KeyboardSetup(true), 2000);
         
         pos1.setText(currentPhase.currentSetup.getAssociatedLetter("q", false).toUpperCase());
         pos2.setText(currentPhase.currentSetup.getAssociatedLetter("w", false).toUpperCase());
@@ -96,8 +102,9 @@ public class MainRandomizer extends javax.swing.JFrame {
         pos24.setText(currentPhase.currentSetup.getAssociatedLetter("b", false).toUpperCase());
         pos25.setText(currentPhase.currentSetup.getAssociatedLetter("n", false).toUpperCase());
         pos26.setText(currentPhase.currentSetup.getAssociatedLetter("m", false).toUpperCase());
-        
-        jLabel1.setText(currentPhase.currentTask.instructions);
+        textBox.addKeyListener(thisKeyHandler);
+        textBox.setFocusable(true);
+        updateInstructions();
         
     }
     
@@ -128,25 +135,56 @@ public class MainRandomizer extends javax.swing.JFrame {
         if(keyToUse > 0){
             JButton button = objMapping.get(keyToUse);
             button.setBackground(Color.GRAY);
+            
             String newLetter = currentPhase.currentSetup.getAssociatedLetter(letter, letter.toUpperCase().equals(letter));
             textBox.setText(textBox.getText() + newLetter);
             checkIfCorrect(textBox.getText());
+            
         }
         
+    }
+    
+    // UNUSED
+    public boolean checkIfShouldHighlight(String toCheck){
+        for(String lU : currentPhase.currentTask.lightUp){
+            if(lU.equalsIgnoreCase(toCheck)){
+                if(!textBox.getText().toLowerCase().contains(lU)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     public void checkIfCorrect(String toCheck){
         if(toCheck.toLowerCase().equals(currentPhase.currentTask.correctAnswer.toLowerCase())){
             textBox.setBackground(Color.GREEN);
+            textBox.setText("");
             currentPhase.completeTask();
             updateInstructions();
+            numCorrect.setText(currentPhase.numCompleted + " Done");
         }else{
             textBox.setBackground(Color.BLUE);
         }
     }
     
     public void updateInstructions(){
-        jLabel1.setText(currentPhase.currentTask.instructions);
+        instructions.setText(currentPhase.currentTask.instructions);
+        requiredWord.setText(currentPhase.currentTask.correctAnswer);
+        for(int i = 1; i <= 26; i++){
+            JButton btnToRemove = objMapping.get(i);
+            btnToRemove.setBackground(Color.GRAY);
+        }
+        for(String lU : currentPhase.currentTask.lightUp){
+            int index = currentPhase.currentSetup.getLetterIndexOpp(lU)+1;
+            if(index > 0){
+                System.out.println("Letter: " + lU + ", Index: " + index);
+                JButton button = objMapping.get(index);
+                if(button != null)
+                    button.setBackground(Color.YELLOW);
+            }
+            
+        }
     }
 
     /**
@@ -185,7 +223,9 @@ public class MainRandomizer extends javax.swing.JFrame {
         pos25 = new javax.swing.JButton();
         pos26 = new javax.swing.JButton();
         textBox = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
+        requiredWord = new javax.swing.JLabel();
+        instructions = new javax.swing.JLabel();
+        numCorrect = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -403,9 +443,19 @@ public class MainRandomizer extends javax.swing.JFrame {
         textBox.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         textBox.setToolTipText("Your Word Shows Here");
 
-        jLabel1.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Please experiment around with the new keyboard!");
+        requiredWord.setFont(new java.awt.Font("Arial Narrow", 0, 24)); // NOI18N
+        requiredWord.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        requiredWord.setText("A");
+
+        instructions.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        instructions.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        instructions.setText("Please experiment around with the new keyboard!");
+
+        numCorrect.setBackground(new java.awt.Color(51, 255, 51));
+        numCorrect.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        numCorrect.setForeground(new java.awt.Color(0, 153, 0));
+        numCorrect.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        numCorrect.setText("0 Done");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -414,11 +464,6 @@ public class MainRandomizer extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(95, 95, 95)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(pos1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(pos2, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
@@ -474,7 +519,16 @@ public class MainRandomizer extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(pos25, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(pos26, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(pos26, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(pos1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pos2, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(requiredWord, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(130, 130, 130)))
                 .addContainerGap(104, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -482,9 +536,14 @@ public class MainRandomizer extends javax.swing.JFrame {
                         .addGap(238, 238, 238)
                         .addComponent(textBox, javax.swing.GroupLayout.PREFERRED_SIZE, 348, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(170, 170, 170)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 487, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(21, 21, 21)
+                        .addComponent(numCorrect, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(105, 105, 105)
+                    .addComponent(instructions, javax.swing.GroupLayout.PREFERRED_SIZE, 633, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(106, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -521,11 +580,18 @@ public class MainRandomizer extends javax.swing.JFrame {
                     .addComponent(pos24, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(pos25, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(pos26, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(84, 84, 84)
+                .addGap(41, 41, 41)
+                .addComponent(requiredWord, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(textBox, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(182, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 191, Short.MAX_VALUE)
+                .addComponent(numCorrect, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(399, Short.MAX_VALUE)
+                    .addComponent(instructions, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(144, 144, 144)))
         );
 
         pack();
@@ -583,14 +649,16 @@ public class MainRandomizer extends javax.swing.JFrame {
             public void run() {
                 MainRandomizer mR = new MainRandomizer();
                 mR.setFocusable(true);
-                mR.addKeyListener(new KeyHandler(mR));
+                mR.thisKeyHandler = new KeyHandler(mR);
+                mR.addKeyListener(mR.thisKeyHandler);
                 mR.setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel instructions;
+    private javax.swing.JLabel numCorrect;
     private javax.swing.JButton pos1;
     private javax.swing.JButton pos10;
     private javax.swing.JButton pos11;
@@ -617,6 +685,7 @@ public class MainRandomizer extends javax.swing.JFrame {
     private javax.swing.JButton pos7;
     private javax.swing.JButton pos8;
     private javax.swing.JButton pos9;
+    private javax.swing.JLabel requiredWord;
     private javax.swing.JTextField textBox;
     // End of variables declaration//GEN-END:variables
 }

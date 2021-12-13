@@ -6,8 +6,13 @@
 package com.daviadoprojects.keyboardrandomizer;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import javax.swing.JButton;
+import java.time.*;
+import java.util.ArrayList;
+import javax.swing.Timer;
 
 /**
  *
@@ -19,9 +24,18 @@ public class MainRandomizer extends javax.swing.JFrame {
      * Creates new form MainRandomizer
      */
     
+    
+    private ArrayList<Double> timeSplits = new ArrayList<Double>();
     private HashMap<Integer, JButton> objMapping = new HashMap<Integer,JButton>();
     public KeyboardPhase currentPhase;
     public KeyHandler thisKeyHandler;
+    private LocalDateTime wordStartTime;
+    private LocalDateTime keyboardStartTime;
+    private double totalSeconds;
+    
+    private double baselineConfidence;
+    private double currentConfidence;
+    
     
     private void initializeHashmap(){
         
@@ -74,7 +88,7 @@ public class MainRandomizer extends javax.swing.JFrame {
     public MainRandomizer() {
         initComponents();
         initializeHashmap();
-        currentPhase = new KeyboardPhase("test", new KeyboardSetup(true), 2000);
+        currentPhase = new KeyboardPhase("initial", new KeyboardSetup(true), 300);
         
         pos1.setText(currentPhase.currentSetup.getAssociatedLetter("q", false).toUpperCase());
         pos2.setText(currentPhase.currentSetup.getAssociatedLetter("w", false).toUpperCase());
@@ -104,8 +118,39 @@ public class MainRandomizer extends javax.swing.JFrame {
         pos26.setText(currentPhase.currentSetup.getAssociatedLetter("m", false).toUpperCase());
         textBox.addKeyListener(thisKeyHandler);
         textBox.setFocusable(true);
+        keyboardStartTime = LocalDateTime.now();
         updateInstructions();
         
+        new Timer(50, new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                Duration d = Duration.between(wordStartTime, LocalDateTime.now());
+                timer.setText(String.valueOf(d.toMinutesPart()) + ":" + addPadding(String.valueOf(d.toSecondsPart()), 2));
+                d = Duration.between(keyboardStartTime, LocalDateTime.now());
+                totalTimer.setText(String.valueOf(d.toMinutesPart()) + ":" + addPadding(String.valueOf(d.toSecondsPart()), 2));
+            }
+        }).start();
+        
+    }
+    
+    private void recalcConfidence(){
+        int numberToUse = Math.min(timeSplits.size(), 60);
+        currentConfidence = ((sumOfList(timeSplits,60) / numberToUse)*.6) + ((totalSeconds / currentPhase.numCompleted)*.4);
+    }
+    
+    private double sumOfList(ArrayList l, int maxSize){
+        double sum = 0;
+        for(int i = 0; i < Math.min(l.size(), maxSize); i++){
+            sum += (double)l.get(i);
+        }
+        return sum;
+    }
+    
+    private String addPadding(String orig, int totalLength){
+        String finalStr = orig;
+        for(int i = orig.length(); i < totalLength; i++){
+            finalStr = "0"+finalStr;
+        }
+        return finalStr;
     }
     
     public void clearTextbox(){
@@ -157,18 +202,83 @@ public class MainRandomizer extends javax.swing.JFrame {
     }
     
     public void checkIfCorrect(String toCheck){
+        
         if(toCheck.toLowerCase().equals(currentPhase.currentTask.correctAnswer.toLowerCase())){
+            
+            LocalDateTime nowTime = LocalDateTime.now();
+            Duration d = Duration.between(wordStartTime, nowTime);
+            timeSplits.add(((double)d.toMillis() / 1000)/ ((currentPhase.currentTask.correctAnswer.length() / 3) + 1));
+            totalSeconds += ((double)d.toMillis() / 1000)/ ((currentPhase.currentTask.correctAnswer.length() / 3) + 1);
+            if(timeSplits.size() > 60){
+                timeSplits.remove(0);
+                // remove fist item every time
+            }
+            //totalSeconds += (double)d.toMillis() / 1000;
+            recalcConfidence();
+            //System.out.println("This word took " + (d.toMillis() / 1000) + " seconds!");
+            System.out.println("Current confidence is: " + currentConfidence + ", Baseline is: " + baselineConfidence + " (" + (baselineConfidence - currentConfidence) + ")");
+            confidence.setText(String.valueOf((int)((baselineConfidence - currentConfidence)*100)));
             textBox.setBackground(Color.GREEN);
             textBox.setText("");
             currentPhase.completeTask();
+            
+            numCorrect.setText(String.valueOf((int)currentPhase.currentScore));
+            wordStartTime = LocalDateTime.now();
+            
             updateInstructions();
-            numCorrect.setText(currentPhase.numCompleted + " Done");
+            checkPhaseStatus();
         }else{
             textBox.setBackground(Color.BLUE);
         }
     }
     
+    public void checkPhaseStatus(){
+        if(currentPhase.requiredScore <= currentPhase.currentScore){
+            if(currentPhase.name.equals("initial")){
+                baselineConfidence = currentConfidence;
+            }
+            
+            currentConfidence = 0;
+            currentPhase = new KeyboardPhase("new", new KeyboardSetup(false), 500);
+        
+            pos1.setText(currentPhase.currentSetup.getAssociatedLetter("q", false).toUpperCase());
+            pos2.setText(currentPhase.currentSetup.getAssociatedLetter("w", false).toUpperCase());
+            pos3.setText(currentPhase.currentSetup.getAssociatedLetter("e", false).toUpperCase());
+            pos4.setText(currentPhase.currentSetup.getAssociatedLetter("r", false).toUpperCase());
+            pos5.setText(currentPhase.currentSetup.getAssociatedLetter("t", false).toUpperCase());
+            pos6.setText(currentPhase.currentSetup.getAssociatedLetter("y", false).toUpperCase());
+            pos7.setText(currentPhase.currentSetup.getAssociatedLetter("u", false).toUpperCase());
+            pos8.setText(currentPhase.currentSetup.getAssociatedLetter("i", false).toUpperCase());
+            pos9.setText(currentPhase.currentSetup.getAssociatedLetter("o", false).toUpperCase());
+            pos10.setText(currentPhase.currentSetup.getAssociatedLetter("p", false).toUpperCase());
+            pos11.setText(currentPhase.currentSetup.getAssociatedLetter("a", false).toUpperCase());
+            pos12.setText(currentPhase.currentSetup.getAssociatedLetter("s", false).toUpperCase());
+            pos13.setText(currentPhase.currentSetup.getAssociatedLetter("d", false).toUpperCase());
+            pos14.setText(currentPhase.currentSetup.getAssociatedLetter("f", false).toUpperCase());
+            pos15.setText(currentPhase.currentSetup.getAssociatedLetter("g", false).toUpperCase());
+            pos16.setText(currentPhase.currentSetup.getAssociatedLetter("h", false).toUpperCase());
+            pos17.setText(currentPhase.currentSetup.getAssociatedLetter("j", false).toUpperCase());
+            pos18.setText(currentPhase.currentSetup.getAssociatedLetter("k", false).toUpperCase());
+            pos19.setText(currentPhase.currentSetup.getAssociatedLetter("l", false).toUpperCase());
+            pos20.setText(currentPhase.currentSetup.getAssociatedLetter("z", false).toUpperCase());
+            pos21.setText(currentPhase.currentSetup.getAssociatedLetter("x", false).toUpperCase());
+            pos22.setText(currentPhase.currentSetup.getAssociatedLetter("c", false).toUpperCase());
+            pos23.setText(currentPhase.currentSetup.getAssociatedLetter("v", false).toUpperCase());
+            pos24.setText(currentPhase.currentSetup.getAssociatedLetter("b", false).toUpperCase());
+            pos25.setText(currentPhase.currentSetup.getAssociatedLetter("n", false).toUpperCase());
+            pos26.setText(currentPhase.currentSetup.getAssociatedLetter("m", false).toUpperCase());
+            textBox.addKeyListener(thisKeyHandler);
+            textBox.setFocusable(true);
+            keyboardStartTime = LocalDateTime.now();
+            updateInstructions();
+            timeSplits = new ArrayList<Double>();
+            totalSeconds = 0;
+            
+        }
+    }
+    
     public void updateInstructions(){
+        wordStartTime = LocalDateTime.now();
         instructions.setText(currentPhase.currentTask.instructions);
         requiredWord.setText(currentPhase.currentTask.correctAnswer);
         for(int i = 1; i <= 26; i++){
@@ -226,6 +336,9 @@ public class MainRandomizer extends javax.swing.JFrame {
         requiredWord = new javax.swing.JLabel();
         instructions = new javax.swing.JLabel();
         numCorrect = new javax.swing.JLabel();
+        timer = new javax.swing.JLabel();
+        totalTimer = new javax.swing.JLabel();
+        confidence = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -452,10 +565,26 @@ public class MainRandomizer extends javax.swing.JFrame {
         instructions.setText("Please experiment around with the new keyboard!");
 
         numCorrect.setBackground(new java.awt.Color(51, 255, 51));
-        numCorrect.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        numCorrect.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         numCorrect.setForeground(new java.awt.Color(0, 153, 0));
         numCorrect.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        numCorrect.setText("0 Done");
+        numCorrect.setText("0");
+
+        timer.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        timer.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        timer.setText("0:00");
+        timer.setToolTipText("");
+
+        totalTimer.setFont(new java.awt.Font("Arial", 1, 24)); // NOI18N
+        totalTimer.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        totalTimer.setText("0:00");
+        totalTimer.setToolTipText("");
+
+        confidence.setBackground(new java.awt.Color(51, 255, 51));
+        confidence.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        confidence.setForeground(new java.awt.Color(0, 102, 255));
+        confidence.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        confidence.setText("0.00");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -531,14 +660,20 @@ public class MainRandomizer extends javax.swing.JFrame {
                         .addGap(130, 130, 130)))
                 .addContainerGap(104, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(238, 238, 238)
-                        .addComponent(textBox, javax.swing.GroupLayout.PREFERRED_SIZE, 348, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(numCorrect, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(238, 238, 238)
+                .addComponent(textBox, javax.swing.GroupLayout.PREFERRED_SIZE, 348, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(22, 22, 22)
+                .addComponent(numCorrect, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(timer, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(confidence, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(248, 248, 248)
+                        .addComponent(totalTimer, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(23, 23, 23))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(105, 105, 105)
@@ -548,48 +683,57 @@ public class MainRandomizer extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(87, 87, 87)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(timer, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(87, 87, 87)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(pos1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(pos11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(pos20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos22, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos23, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos24, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos25, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pos26, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(41, 41, 41)
+                        .addComponent(requiredWord, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(textBox, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(208, 208, 208)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(pos1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(pos11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(pos20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos22, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos23, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos24, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos25, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pos26, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(41, 41, 41)
-                .addComponent(requiredWord, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textBox, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 191, Short.MAX_VALUE)
-                .addComponent(numCorrect, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(numCorrect, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(totalTimer)
+                    .addComponent(confidence, javax.swing.GroupLayout.DEFAULT_SIZE, 32, Short.MAX_VALUE))
                 .addContainerGap())
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap(399, Short.MAX_VALUE)
+                    .addContainerGap(417, Short.MAX_VALUE)
                     .addComponent(instructions, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(144, 144, 144)))
         );
@@ -657,6 +801,7 @@ public class MainRandomizer extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel confidence;
     private javax.swing.JLabel instructions;
     private javax.swing.JLabel numCorrect;
     private javax.swing.JButton pos1;
@@ -687,5 +832,7 @@ public class MainRandomizer extends javax.swing.JFrame {
     private javax.swing.JButton pos9;
     private javax.swing.JLabel requiredWord;
     private javax.swing.JTextField textBox;
+    private javax.swing.JLabel timer;
+    private javax.swing.JLabel totalTimer;
     // End of variables declaration//GEN-END:variables
 }

@@ -14,11 +14,13 @@ public class Task {
     public String instructions;
     public String correctAnswer;
     public String[] lightUp;
-    public Task(double score, String instructions, String correctAnswer, String[] lightUp){
+    public boolean isPractice;
+    public Task(double score, String instructions, String correctAnswer, String[] lightUp, boolean isPractice){
         this.score = score;
         this.instructions = instructions;
         this.correctAnswer = correctAnswer;
         this.lightUp = lightUp;
+        this.isPractice = isPractice;
     }
     
     

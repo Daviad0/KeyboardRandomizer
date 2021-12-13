@@ -110,17 +110,23 @@
               <EmptySpace pref="104" max="32767" attributes="0"/>
           </Group>
           <Group type="102" attributes="0">
+              <EmptySpace min="-2" pref="238" max="-2" attributes="0"/>
+              <Component id="textBox" min="-2" pref="348" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+              <Component id="numCorrect" min="-2" pref="75" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="238" max="-2" attributes="0"/>
-                      <Component id="textBox" min="-2" pref="348" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
-                      <Component id="numCorrect" min="-2" pref="75" max="-2" attributes="0"/>
+                  <Component id="timer" alignment="1" min="-2" pref="70" max="-2" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="confidence" min="-2" pref="110" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="248" max="-2" attributes="0"/>
+                      <Component id="totalTimer" min="-2" pref="103" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
           </Group>
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
@@ -133,53 +139,66 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="87" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="pos1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos3" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos4" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos6" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos7" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos8" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos9" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos10" alignment="3" min="-2" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="timer" min="-2" pref="20" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="87" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="pos1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos3" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos4" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos5" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos6" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos7" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos8" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos9" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos10" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="pos11" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos12" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos13" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos14" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos15" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos16" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos17" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos18" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos19" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="pos20" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos21" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos22" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos23" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos24" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos25" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="pos26" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+                      <Component id="requiredWord" min="-2" pref="49" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="textBox" min="-2" pref="70" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="208" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="pos11" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos12" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos13" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos14" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos15" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos16" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos17" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos18" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos19" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="numCorrect" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                  <Component id="totalTimer" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="confidence" alignment="3" pref="32" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="pos20" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos21" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos22" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos23" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos24" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos25" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="pos26" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
-              <Component id="requiredWord" min="-2" pref="49" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="textBox" min="-2" pref="70" max="-2" attributes="0"/>
-              <EmptySpace pref="191" max="32767" attributes="0"/>
-              <Component id="numCorrect" min="-2" pref="31" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace pref="399" max="32767" attributes="0"/>
+                  <EmptySpace pref="417" max="32767" attributes="0"/>
                   <Component id="instructions" min="-2" pref="74" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="144" max="-2" attributes="0"/>
               </Group>
@@ -763,13 +782,48 @@
           <Color blue="33" green="ff" red="33" type="rgb"/>
         </Property>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="14" style="1"/>
+          <Font name="Arial" size="18" style="1"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="99" red="0" type="rgb"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="2"/>
-        <Property name="text" type="java.lang.String" value="0 Done"/>
+        <Property name="text" type="java.lang.String" value="0"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="timer">
+      <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Arial" size="14" style="1"/>
+        </Property>
+        <Property name="horizontalAlignment" type="int" value="4"/>
+        <Property name="text" type="java.lang.String" value="0:00"/>
+        <Property name="toolTipText" type="java.lang.String" value=""/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="totalTimer">
+      <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Arial" size="24" style="1"/>
+        </Property>
+        <Property name="horizontalAlignment" type="int" value="4"/>
+        <Property name="text" type="java.lang.String" value="0:00"/>
+        <Property name="toolTipText" type="java.lang.String" value=""/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="confidence">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="33" green="ff" red="33" type="rgb"/>
+        </Property>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Arial" size="18" style="1"/>
+        </Property>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="66" red="0" type="rgb"/>
+        </Property>
+        <Property name="horizontalAlignment" type="int" value="0"/>
+        <Property name="text" type="java.lang.String" value="0.00"/>
       </Properties>
     </Component>
   </SubComponents>

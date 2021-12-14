@@ -24,7 +24,7 @@ public class MainRandomizer extends javax.swing.JFrame {
      * Creates new form MainRandomizer
      */
     
-    
+    // define all of the important variables for the task, including created classes so everything can work smoothly
     private ArrayList<Double> timeSplits = new ArrayList<Double>();
     private HashMap<Integer, JButton> objMapping = new HashMap<Integer,JButton>();
     public KeyboardPhase currentPhase;
@@ -32,11 +32,13 @@ public class MainRandomizer extends javax.swing.JFrame {
     private LocalDateTime wordStartTime;
     private LocalDateTime keyboardStartTime;
     private double totalSeconds;
+    private MainRandomizer instance;
     
+    // keep track of the confidence NOW and the first confidence
     private double baselineConfidence;
     private double currentConfidence;
     
-    
+    // add all of the buttons to link a number (index basically but at 1) to the button so we can highlight w/o if statements
     private void initializeHashmap(){
         
         // since it is only a pointer, we can put it in this dictionary to get an item by index instead of using if statements
@@ -79,17 +81,19 @@ public class MainRandomizer extends javax.swing.JFrame {
         }
         
         
-        
+        // set original background color
         textBox.setBackground(Color.BLUE);
         
     }
     
     public KeyboardSetup k;
     public MainRandomizer() {
+        // initialize every component and variable necessary along with the baseline default keyboard
+        instance = this;
         initComponents();
         initializeHashmap();
         currentPhase = new KeyboardPhase("initial", new KeyboardSetup(true), 300);
-        
+        // set all of the buttons on the screen to the corresponding letters that they represent in the phase
         pos1.setText(currentPhase.currentSetup.getAssociatedLetter("q", false).toUpperCase());
         pos2.setText(currentPhase.currentSetup.getAssociatedLetter("w", false).toUpperCase());
         pos3.setText(currentPhase.currentSetup.getAssociatedLetter("e", false).toUpperCase());
@@ -116,28 +120,42 @@ public class MainRandomizer extends javax.swing.JFrame {
         pos24.setText(currentPhase.currentSetup.getAssociatedLetter("b", false).toUpperCase());
         pos25.setText(currentPhase.currentSetup.getAssociatedLetter("n", false).toUpperCase());
         pos26.setText(currentPhase.currentSetup.getAssociatedLetter("m", false).toUpperCase());
+        // adding an event listener for keys
         textBox.addKeyListener(thisKeyHandler);
+        confidence.setVisible(false);
         textBox.setFocusable(true);
         keyboardStartTime = LocalDateTime.now();
+        // updating the instructional elements to give the next prompt
         updateInstructions();
         
+        // every 1/20 of a second, set the timer and confidence elements 
         new Timer(50, new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 Duration d = Duration.between(wordStartTime, LocalDateTime.now());
                 timer.setText(String.valueOf(d.toMinutesPart()) + ":" + addPadding(String.valueOf(d.toSecondsPart()), 2));
                 d = Duration.between(keyboardStartTime, LocalDateTime.now());
                 totalTimer.setText(String.valueOf(d.toMinutesPart()) + ":" + addPadding(String.valueOf(d.toSecondsPart()), 2));
+                recalcConfidence();
+            }
+        }).start();
+        
+        // try to refocus window and keep the keylistener on every second in case of clickoff
+        new Timer(1000, new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                instance.requestFocus();
             }
         }).start();
         
     }
     
     private void recalcConfidence(){
+        // recalculate the running confidence based on the most recent set of data (60% weight) and the total average data (40% weight)
         int numberToUse = Math.min(timeSplits.size(), 60);
         currentConfidence = ((sumOfList(timeSplits,60) / numberToUse)*.6) + ((totalSeconds / currentPhase.numCompleted)*.4);
     }
     
     private double sumOfList(ArrayList l, int maxSize){
+        // dynamic function to get the sum of any ArrayList passed in (and getting the max size of it as well)
         double sum = 0;
         for(int i = 0; i < Math.min(l.size(), maxSize); i++){
             sum += (double)l.get(i);
@@ -145,6 +163,7 @@ public class MainRandomizer extends javax.swing.JFrame {
         return sum;
     }
     
+    // adding 0s to the beginning of the string to make sure it is formatted like a time
     private String addPadding(String orig, int totalLength){
         String finalStr = orig;
         for(int i = orig.length(); i < totalLength; i++){
@@ -153,11 +172,13 @@ public class MainRandomizer extends javax.swing.JFrame {
         return finalStr;
     }
     
+    // handle clear event
     public void clearTextbox(){
         textBox.setText("");
         checkIfCorrect(textBox.getText());
     }
     
+    // handle backspace event
     public void backspace(){
         if(textBox.getText().length() > 0){
             textBox.setText(textBox.getText().substring(0,textBox.getText().length()-1));
@@ -165,8 +186,10 @@ public class MainRandomizer extends javax.swing.JFrame {
         }
     }
    
+    // handle when a key is pressed
     public void handleKeyPress(String letter){
         int keyToUse = currentPhase.currentSetup.getLetterIndex(letter)+1;
+        // is key a valid one to use? If so, then highlight
         if(keyToUse > 0){
             JButton button = objMapping.get(keyToUse);
             button.setBackground(Color.CYAN);
@@ -175,48 +198,41 @@ public class MainRandomizer extends javax.swing.JFrame {
         
     }
     
+    // handle when a key is released
     public void handleKeyStop(String letter){
         int keyToUse = currentPhase.currentSetup.getLetterIndex(letter)+1;
+        // is key a valid key? then unhighlight and add letter to textbox
         if(keyToUse > 0){
             JButton button = objMapping.get(keyToUse);
             button.setBackground(Color.GRAY);
             
             String newLetter = currentPhase.currentSetup.getAssociatedLetter(letter, letter.toUpperCase().equals(letter));
             textBox.setText(textBox.getText() + newLetter);
+            // check if the word is done
             checkIfCorrect(textBox.getText());
             
         }
         
     }
     
-    // UNUSED
-    public boolean checkIfShouldHighlight(String toCheck){
-        for(String lU : currentPhase.currentTask.lightUp){
-            if(lU.equalsIgnoreCase(toCheck)){
-                if(!textBox.getText().toLowerCase().contains(lU)){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
+    // checks if the current word is correct
     public void checkIfCorrect(String toCheck){
-        
+        // checking if the word equals the correct one, meaning the next one can be shown
         if(toCheck.toLowerCase().equals(currentPhase.currentTask.correctAnswer.toLowerCase())){
             
+            // adding the time to the total time so far (weighted based on length)
             LocalDateTime nowTime = LocalDateTime.now();
             Duration d = Duration.between(wordStartTime, nowTime);
             timeSplits.add(((double)d.toMillis() / 1000)/ ((currentPhase.currentTask.correctAnswer.length() / 3) + 1));
             totalSeconds += ((double)d.toMillis() / 1000)/ ((currentPhase.currentTask.correctAnswer.length() / 3) + 1);
+            // make sure that most recent ones are kept track of
             if(timeSplits.size() > 60){
                 timeSplits.remove(0);
-                // remove fist item every time
+                // remove first item every time
             }
-            //totalSeconds += (double)d.toMillis() / 1000;
-            recalcConfidence();
-            //System.out.println("This word took " + (d.toMillis() / 1000) + " seconds!");
-            System.out.println("Current confidence is: " + currentConfidence + ", Baseline is: " + baselineConfidence + " (" + (baselineConfidence - currentConfidence) + ")");
+    
+            //System.out.println("Current confidence is: " + currentConfidence + ", Baseline is: " + baselineConfidence + " (" + (baselineConfidence - currentConfidence) + ")");
+            // set confidence, correct, textbox, and complete task
             confidence.setText(String.valueOf((int)((baselineConfidence - currentConfidence)*100)));
             textBox.setBackground(Color.GREEN);
             textBox.setText("");
@@ -225,6 +241,7 @@ public class MainRandomizer extends javax.swing.JFrame {
             numCorrect.setText(String.valueOf((int)currentPhase.currentScore));
             wordStartTime = LocalDateTime.now();
             
+            // reupdate the instructions and check if the phase is over
             updateInstructions();
             checkPhaseStatus();
         }else{
@@ -233,14 +250,18 @@ public class MainRandomizer extends javax.swing.JFrame {
     }
     
     public void checkPhaseStatus(){
-        if(currentPhase.requiredScore <= currentPhase.currentScore){
+        // checks to see if the user has surpassed the required score and required confidence to pass
+        if(currentPhase.requiredScore <= currentPhase.currentScore && (int)((baselineConfidence - currentConfidence)*100) >= -100){
+            // checking if should store in baseline
             if(currentPhase.name.equals("initial")){
                 baselineConfidence = currentConfidence;
+                confidence.setVisible(true);
             }
             
+            // creating a new phase
             currentConfidence = 0;
             currentPhase = new KeyboardPhase("new", new KeyboardSetup(false), 500);
-        
+            // resetting button contents
             pos1.setText(currentPhase.currentSetup.getAssociatedLetter("q", false).toUpperCase());
             pos2.setText(currentPhase.currentSetup.getAssociatedLetter("w", false).toUpperCase());
             pos3.setText(currentPhase.currentSetup.getAssociatedLetter("e", false).toUpperCase());
@@ -267,6 +288,7 @@ public class MainRandomizer extends javax.swing.JFrame {
             pos24.setText(currentPhase.currentSetup.getAssociatedLetter("b", false).toUpperCase());
             pos25.setText(currentPhase.currentSetup.getAssociatedLetter("n", false).toUpperCase());
             pos26.setText(currentPhase.currentSetup.getAssociatedLetter("m", false).toUpperCase());
+            // resetting everything else for a new phase
             textBox.addKeyListener(thisKeyHandler);
             textBox.setFocusable(true);
             keyboardStartTime = LocalDateTime.now();
@@ -278,13 +300,16 @@ public class MainRandomizer extends javax.swing.JFrame {
     }
     
     public void updateInstructions(){
+        // updates important elements
         wordStartTime = LocalDateTime.now();
         instructions.setText(currentPhase.currentTask.instructions);
         requiredWord.setText(currentPhase.currentTask.correctAnswer);
+        // set each of the buttons to not highlighted after a word
         for(int i = 1; i <= 26; i++){
             JButton btnToRemove = objMapping.get(i);
             btnToRemove.setBackground(Color.GRAY);
         }
+        // reset each of the required words to be highlighted
         for(String lU : currentPhase.currentTask.lightUp){
             int index = currentPhase.currentSetup.getLetterIndexOpp(lU)+1;
             if(index > 0){
